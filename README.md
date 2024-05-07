@@ -1,24 +1,38 @@
-# Sistema Bancário Simples em Python
+# Sistema Bancário em POO
 
-Este projeto é uma implementação simples de um sistema bancário em Python. Ele permite que os usuários realizem operações bancárias básicas como depósitos, saques e visualização de extratos. O objetivo deste projeto é demonstrar a aplicação de conceitos fundamentais de programação em Python, como funções, loops, condicionais e tratamento de exceções.
+## Sobre o Projeto
+Este projeto é uma simulação de um sistema bancário implementado utilizando os princípios da Programação Orientada a Objetos (POO). Ele permite a criação de usuários e contas bancárias, além de realizar operações básicas como depósitos, saques e exibição de extratos.
 
 ## Funcionalidades
-
-- **Depósitos**: Adicione fundos à sua conta.
-- **Saques**: Retire fundos, respeitando um limite de saque diário.
-- **Extrato**: Veja um histórico das suas transações.
-- **Autenticação de Usuário**: Acesse o sistema de forma segura.
-- **Persistência de Dados**: Mantenha suas informações seguras e acessíveis após o fechamento do programa.
+- **Criação de Usuários**: Permite adicionar novos usuários ao sistema bancário.
+- **Criação de Contas**: Permite abrir novas contas bancárias para usuários existentes.
+- **Depósitos**: Permite realizar depósitos em contas existentes.
+- **Saques**: Permite realizar saques de contas, respeitando o saldo e limites estabelecidos.
+- **Extratos**: Exibe o histórico de transações e o saldo atual da conta.
 
 ## Como Usar
-
+Para utilizar o sistema, siga os passos abaixo:
 1. Clone o repositório para sua máquina local.
-2. Execute o arquivo `main.py` para iniciar o sistema.
-3. Siga as instruções no menu para realizar operações bancárias.
+2. Execute o arquivo principal do sistema.
+3. Siga as instruções no menu interativo para realizar operações bancárias.
+
+## Tecnologias Utilizadas
+- Python
+- POO
 
 ## Contribuições
+Contribuições são sempre bem-vindas! Para contribuir, por favor:
+1. Faça um fork do projeto.
+2. Crie uma nova branch para suas modificações (`git checkout -b feature/novaFeature`).
+3. Faça commit das suas alterações (`git commit -m 'Adicionando uma nova feature'`).
+4. Faça push para a branch (`git push origin feature/novaFeature`).
+5. Abra um Pull Request.
 
-Contribuições são sempre bem-vindas! Se você tem uma sugestão para melhorar este sistema, sinta-se à vontade para fazer um fork do repositório e enviar um pull request, ou abrir uma issue com a tag "melhoria".
+
+Link do Projeto: https://github.com/thiagoaquinodasilva/desafio-dio-banco-python
+
+## Imagem UML do Projeto
+![UML - Trilha Python - desafio banco](https://github.com/thiagoaquinodasilva/desafio-dio-banco-python/assets/92541911/4ced8fab-ea4e-4936-ac23-8a4cbe798240)
 
 ---
 
