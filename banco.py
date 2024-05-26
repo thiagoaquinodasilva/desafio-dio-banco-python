@@ -1,31 +1,61 @@
 import textwrap
 from abc import ABC, abstractmethod
+from datetime import datetime, timedelta
+import os
+
+# Caminho do arquivo de banco de dados
+DB_FILE = 'contas.txt'
+
+# Função para carregar contas do arquivo
+def carregar_contas():
+    if not os.path.exists(DB_FILE):
+        return []
+    with open(DB_FILE, 'r') as file:
+        linhas = file.readlines()
+        contas = []
+        for linha in linhas:
+            agencia, numero, cpf, nome, data_nascimento, endereco = linha.strip().split(';')
+            cliente = Cliente(nome, cpf, data_nascimento, endereco)
+            conta = Conta(agencia, int(numero), cliente)
+            contas.append(conta)
+    return contas
+
+# Função para salvar contas no arquivo
+def salvar_conta(conta):
+    with open(DB_FILE, 'a') as file:
+        linha = f'{conta.agencia};{conta.numero};{conta.cliente.cpf};{conta.cliente.nome};{conta.cliente.data_nascimento};{conta.cliente.endereco}\n'
+        file.write(linha)
 
 # Classes adicionais conforme o diagrama UML
 class Transacao(ABC):
+    def __init__(self):
+        self.data_hora = datetime.now()
+
     @abstractmethod
     def registrar(self, conta):
         pass
 
 class Deposito(Transacao):
     def __init__(self, valor):
+        super().__init__()
         self.valor = valor
 
     def registrar(self, conta):
         conta.depositar(self.valor)
 
     def __str__(self):
-        return f'Depósito:\tR$ {self.valor:.2f}'
+        return f'Depósito:\tR$ {self.valor:.2f}\t{self.data_hora.strftime("%d-%m-%Y %H:%M:%S")}'
 
 class Saque(Transacao):
     def __init__(self, valor):
+        super().__init__()
         self.valor = valor
 
     def registrar(self, conta):
-        conta.sacar(self.valor)
+        return conta.sacar(self.valor)
 
     def __str__(self):
-        return f'Saque:\t\tR$ {self.valor:.2f}'
+        return f'Saque:\t\tR$ {self.valor:.2f}\t{self.data_hora.strftime("%d-%m-%Y %H:%M:%S")}'
 
 class Historico:
     def __init__(self):
@@ -33,6 +63,10 @@ class Historico:
 
     def adicionar_transacao(self, transacao):
         self.transacoes.append(transacao)
+
+    def transacoes_do_dia(self):
+        hoje = datetime.now().date()
+        return [t for t in self.transacoes if t.data_hora.date() == hoje]
 
 # Classes existentes atualizadas para interagir com as novas classes
 
@@ -47,20 +81,28 @@ class Cliente:
     def adicionar_conta(self, conta):
         self.contas.append(conta)
 
+    def realizar_transacao(self, conta, transacao):
+        if len(conta.historico.transacoes_do_dia()) >= 10:
+            print("\n@@@ Você excedeu o número de transações permitidas para hoje! @@@")
+            return False
+        sucesso = transacao.registrar(conta)
+        if sucesso:
+            conta.historico.adicionar_transacao(transacao)
+        return sucesso
+
 class Conta:
     def __init__(self, agencia, numero, cliente, limite_saques=3):
         self.agencia = agencia
         self.numero = numero
         self.cliente = cliente
         self.saldo = 0
-        self.historico = Historico()  # Atualizado para usar a classe Historico
+        self.historico = Historico()
         self.limite_saques = limite_saques
         self.numero_saques = 0
 
     def depositar(self, valor):
         if valor > 0:
             self.saldo += valor
-            self.historico.adicionar_transacao(Deposito(valor))
             print('\n=== Depósito realizado com sucesso! ===')
             return True
         else:
@@ -79,14 +121,12 @@ class Conta:
             return False
         elif valor > 0:
             self.saldo -= valor
-            self.historico.adicionar_transacao(Saque(valor))  # Adiciona a transação ao histórico
             self.numero_saques += 1
             print('\n=== Saque realizado com sucesso! ===')
             return True
         else:
             print('\n@@@ Operação falhou! O valor informado é inválido. @@@')
             return False
-            
 
     def exibir_extrato(self):
         print('\n=============== EXTRATO ===============')
@@ -94,7 +134,6 @@ class Conta:
             print(transacao)
         print(f'\nSaldo:\t\tR$ {self.saldo:.2f}')
         print('=======================================')
-
 
 # Funções auxiliares
 def criar_usuario(usuarios):
@@ -122,10 +161,14 @@ def filtrar_usuario(cpf, usuarios):
 def criar_conta(agencia, numero_conta, usuario):
     nova_conta = Conta(agencia, numero_conta, usuario)
     usuario.adicionar_conta(nova_conta)
+    salvar_conta(nova_conta)
     print('\n=== Conta criada com sucesso! ===')
     return nova_conta
 
 def listar_contas(contas):
+    if not contas:
+        print('\n@@@ Nenhuma conta encontrada! @@@')
+        return
     print("=" * 100)
     print("LISTA DE CONTAS:")
     for conta in contas:
@@ -147,7 +190,7 @@ def menu():
 def main():
     AGENCIA = '0001'
     usuarios = []
-    contas = []
+    contas = carregar_contas()
 
     while True:
         opcao = menu()
@@ -157,7 +200,8 @@ def main():
             conta = next((c for c in contas if str(c.numero) == numero_conta), None)
             if conta:
                 valor = float(input('Informe o valor do depósito: '))
-                conta.depositar(valor)
+                cliente = conta.cliente
+                cliente.realizar_transacao(conta, Deposito(valor))
             else:
                 print('\n@@@ Conta não encontrada! @@@')
         
@@ -166,7 +210,8 @@ def main():
             conta = next((c for c in contas if str(c.numero) == numero_conta), None)
             if conta:
                 valor = float(input('Informe o valor do saque: '))
-                conta.sacar(valor)
+                cliente = conta.cliente
+                cliente.realizar_transacao(conta, Saque(valor))
             else:
                 print('\n@@@ Conta não encontrada! @@@')
 
